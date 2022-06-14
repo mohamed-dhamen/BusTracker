@@ -1,3 +1,4 @@
+import 'package:bustracker/services/MapsTest.dart';
 import 'package:bustracker/services/MyMaps.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,7 @@ class HomeState extends State<Home> {
   Widget bodyFunction() {
     switch (index) {
       case 0:
-        return MyMaps();
+        return MapsPage();
         break;
       case 1:
         return addStation();
@@ -44,7 +45,7 @@ class HomeState extends State<Home> {
       floatingActionButton: Container(
         height: 50,
         width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        margin: EdgeInsets.symmetric(horizontal: 55, vertical: 20),
         child: FloatingActionButton(
           splashColor: Colors.white,
           backgroundColor: Colors.blue,
@@ -178,7 +179,7 @@ class HomeState extends State<Home> {
   Widget addBus() {
     setState(() {
       for (int i = 0; i < stations.length; i++) {
-        ischeckedlist.add(true);
+        ischeckedlist.add(false);
       }
       for (int i = 0; i < ischeckedlist.length - 1; i++) {
         print(ischeckedlist[i]);

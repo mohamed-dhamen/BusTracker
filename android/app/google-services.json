@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "821835345921",
+    "project_id": "mydata-62ff0",
+    "storage_bucket": "mydata-62ff0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821835345921:android:bc57f1093df0ed70d11000",
+        "android_client_info": {
+          "package_name": "com.example.bustracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "821835345921-3osqes1rc4qautuk6393fb0j85srlgup.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAv56LBG4SfskwG6RL5gUl1GiR7_c9DTZs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "821835345921-3osqes1rc4qautuk6393fb0j85srlgup.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

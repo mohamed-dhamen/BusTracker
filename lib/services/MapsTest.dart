@@ -10,6 +10,9 @@ class MapsPage extends StatefulWidget {
 class _MapsPageState extends State<MapsPage> {
   late GoogleMapController controller;
 
+  final CollectionReference collectionRef =
+      FirebaseFirestore.instance.collection("station");
+
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   void initMarker(specify, specify1, specifyId) async {
@@ -26,44 +29,42 @@ class _MapsPageState extends State<MapsPage> {
   }
 
   getMarkerData() async {
-    FirebaseFirestore.instance.collection("station").get().then((docs) {
-      if (docs.docs.isNotEmpty) {
-        for (int i = 0; i < docs.docs.length; i++) {
-          print(docs.docs[i]['latitude']);
-          print(docs.docs[i]['longitude']);
-          initMarker(docs.docs[i]['latitude'], docs.docs[i]['longitude'],
-              docs.docs[i].id);
-        }
+    await collectionRef.get().then((querySnapshot) {
+      for (var result in querySnapshot.docs) {
+        print(result.data());
+        Map<String, dynamic> data = result.data()! as Map<String, dynamic>;
+        initMarker(data["latitude"], data["longitude"],
+            data["name"]);
       }
     });
   }
 
   @override
   void initState() {
-    getMarkerData();
     super.initState();
   }
 
+  // Set<Marker> getMarker() {
+  //     return <Marker>[
+  //       Marker(
+  //           markerId: MarkerId('courent location'),
+  //           position: LatLng(33.573050, -7.597099),
+  //           icon: BitmapDescriptor.defaultMarker,
+  //           infoWindow: InfoWindow(title: 'Location'))
+  //     ].toSet();
+  //   }
+
   @override
   Widget build(BuildContext context) {
-    Set<Marker> getMarker() {
-      return <Marker>[
-        Marker(
-            markerId: MarkerId('courent location'),
-            position: LatLng(33.573050, -7.597099),
-            icon: BitmapDescriptor.defaultMarker,
-            infoWindow: InfoWindow(title: 'Location'))
-      ].toSet();
-    }
-
     return Scaffold(
         body: GoogleMap(
-            markers: getMarker(),
+            markers: markers.values.toSet(),
             mapType: MapType.normal,
             initialCameraPosition: CameraPosition(
                 target: LatLng(33.573050, -7.597099), zoom: 12.0),
             onMapCreated: (GoogleMapController controller) {
               controller = controller;
+              getMarkerData();
             }));
   }
 }

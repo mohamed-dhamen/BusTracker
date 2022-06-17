@@ -1,5 +1,5 @@
 import 'package:bustracker/services/MapsTest.dart';
-import 'package:bustracker/services/MyMaps.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -14,9 +14,9 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  // ignore: deprecated_member_use
-  List<StationInfoModel> stations = StationInfoModel.getStations();
+  CollectionReference ref = FirebaseFirestore.instance.collection("station");
   List<bool> ischeckedlist = [];
+  List<StationInfoModel> stations = StationInfoModel.getStations();
   int index = 0;
   bool isChecked = false;
 
@@ -109,24 +109,17 @@ class HomeState extends State<Home> {
 
   Widget addStation() {
     // function get form station innfo
-    return NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              title: Text('Station Informations'),
-            )
-          ];
-        },
-        body: Container(
-          child: Padding(
-              padding: EdgeInsets.only(top: 32.0),
-              child: Column(
-                children: <Widget>[
-                  getWidgetImageStationLogo(),
-                  getWidgetStationForm(),
-                ],
-              )),
-        ));
+    return SingleChildScrollView(
+        child: Container(
+      child: Padding(
+          padding: EdgeInsets.only(top: 32.0),
+          child: Column(
+            children: <Widget>[
+              getWidgetImageStationLogo(),
+              getWidgetStationForm(),
+            ],
+          )),
+    ));
   }
 
   Widget getWidgetImageStationLogo() {
@@ -185,24 +178,17 @@ class HomeState extends State<Home> {
         print(ischeckedlist[i]);
       }
     });
-    return NestedScrollView(
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              title: Text('Station Informations'),
-            )
-          ];
-        },
-        body: Container(
-          child: Padding(
-              padding: EdgeInsets.only(top: 32.0),
-              child: Column(
-                children: <Widget>[
-                  getWidgetImageBusLogo(),
-                  getWidgetBusForm(),
-                ],
-              )),
-        ));
+    return SingleChildScrollView(
+        child: Container(
+      child: Padding(
+          padding: EdgeInsets.only(top: 32.0),
+          child: Column(
+            children: <Widget>[
+              getWidgetImageBusLogo(),
+              getWidgetBusForm(),
+            ],
+          )),
+    ));
   }
 
   Widget getWidgetImageBusLogo() {
@@ -226,50 +212,82 @@ class HomeState extends State<Home> {
               keyboardType:
                   TextInputType.numberWithOptions(signed: true, decimal: true),
               decoration: InputDecoration(
-                  label: Text('Bus Number'), border: OutlineInputBorder())),
+                  label: const Text('Bus Number'),
+                  border: OutlineInputBorder())),
         ),
-        Container(
-          height: 300,
-          child: ListView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: stations.length,
-              itemBuilder: (BuildContext context, int index) {
-                return new Card(
-                  child: new Container(
-                      padding: new EdgeInsets.all(10.0),
-                      child: Column(
-                        children: <Widget>[
-                          new CheckboxListTile(
-                              activeColor: Colors.pink[300],
-                              dense: true,
-                              //font change
-                              title: new Text(
-                                "${stations[index].stationName}",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5),
-                              ),
-                              value: ischeckedlist[index],
-                              secondary: Container(
-                                height: 50,
-                                width: 50,
-                                child: Image.asset(
-                                  "images/bus-stop 4.png",
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              onChanged: (val) {
-                                setState(() {
-                                  ischeckedlist[index] = val as bool;
-                                });
-                              }),
-                        ],
-                      )),
-                );
-              }),
-        ),
+        listViewBuilder(),
       ]),
     );
   }
+
+  Widget listViewBuilder() {
+    return Container(
+      height: 300,
+      child: ListView.builder(
+          scrollDirection: Axis.vertical,
+          itemCount: stations.length,
+          itemBuilder: (BuildContext context, int index) {
+            return new Card(
+              child: Container(
+                  padding: new EdgeInsets.all(10.0),
+                  child: Column(
+                    children: <Widget>[
+                      new CheckboxListTile(
+                          activeColor: Colors.pink[300],
+                          dense: true,
+                          //font change
+                          title: new Text(
+                            "${stations[index].stationName}",
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5),
+                          ),
+                          value: ischeckedlist[index],
+                          secondary: Container(
+                            height: 50,
+                            width: 50,
+                            child: Image.asset(
+                              "images/bus-stop 4.png",
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          onChanged: (val) {
+                            setState(() {
+                              ischeckedlist[index] = val as bool;
+                            });
+                          }),
+                    ],
+                  )),
+            );
+          }),
+    );
+  }
+
+//on cours de developpment
+  // Widget getDataFromFireToListBuilder() {
+  //   return Container(
+  //       height: 300,
+  //       child: StreamBuilder(
+  //           stream: ref.snapshots(),
+  //           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+  //             if (snapshot.hasError) {
+  //               return Text("error");
+  //             }
+  //             if (snapshot.connectionState == ConnectionState.waiting) {
+  //               return Text("leading");
+  //             }
+  //             if (snapshot.hasData) {
+  //               return ListView.builder(
+  //                 scrollDirection: Axis.vertical,
+  //                 itemCount: snapshot.data!.docs.length,
+  //                 itemBuilder: (context, int i) {
+  //                   Map<dynamic, dynamic> data =
+  //                       snapshot.data!.docs[i].data() as Map;
+  //                   return Text("${data["name"]}");
+  //                 },
+  //               );
+  //             }
+  //           }));
+  // }
 }

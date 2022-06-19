@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import 'Model/StationsInfo.dart';
 
 class Home extends StatefulWidget {
@@ -14,11 +13,13 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
-  CollectionReference ref = FirebaseFirestore.instance.collection("station");
-  List<bool> ischeckedlist = [];
-  List<StationInfoModel> stations = StationInfoModel.getStations();
+  List<bool> ischeckedlist = List.generate(400, (index) => false);
   int index = 0;
   bool isChecked = false;
+  TextEditingController stationnamecontroller = TextEditingController();
+  TextEditingController stationlatitudecontroller = TextEditingController();
+  TextEditingController stationlongitudecontroller = TextEditingController();
+  TextEditingController busnumbercontroller = TextEditingController();
 
   Widget bodyFunction() {
     switch (index) {
@@ -32,7 +33,7 @@ class HomeState extends State<Home> {
         return addBus();
         break;
       default:
-        return Container(color: Colors.white);
+        return Drawer(backgroundColor: Colors.blue);
         break;
     }
   }
@@ -41,34 +42,6 @@ class HomeState extends State<Home> {
   Widget build(BuildContext context) {
     bool isChecked = false;
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Container(
-        height: 50,
-        width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: 55, vertical: 20),
-        child: FloatingActionButton(
-          splashColor: Colors.white,
-          backgroundColor: Colors.blue,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.send),
-              SizedBox(
-                width: 10,
-              ),
-              Text(
-                "Submit",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              )
-            ],
-          ), //child widget inside this button
-          shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          onPressed: () {
-            print("Button is pressed.");
-            //task to execute when this button is pressed
-          },
-        ),
-      ),
       bottomNavigationBar: ConvexAppBar(
         backgroundColor: Colors.blue,
         elevation: 20,
@@ -124,6 +97,7 @@ class HomeState extends State<Home> {
 
   Widget getWidgetImageStationLogo() {
     return Container(
+        margin: EdgeInsets.only(top: 60, bottom: 30),
         width: 200,
         height: 200,
         alignment: Alignment.center,
@@ -135,12 +109,13 @@ class HomeState extends State<Home> {
 
   Widget getWidgetStationForm() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+      margin: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       child: Column(
         children: [
           Container(
             margin: EdgeInsets.symmetric(vertical: 5),
             child: TextField(
+                controller: stationnamecontroller,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                     label: Text('enter the refernce of bus stop'),
@@ -149,6 +124,7 @@ class HomeState extends State<Home> {
           Container(
             margin: EdgeInsets.symmetric(vertical: 5),
             child: TextField(
+                controller: stationlatitudecontroller,
                 keyboardType: TextInputType.numberWithOptions(
                     signed: true, decimal: true),
                 decoration: InputDecoration(
@@ -158,11 +134,39 @@ class HomeState extends State<Home> {
           Container(
             margin: EdgeInsets.symmetric(vertical: 5),
             child: TextField(
+                controller: stationlongitudecontroller,
                 keyboardType: TextInputType.numberWithOptions(
                     signed: true, decimal: true),
                 decoration: InputDecoration(
                     label: Text('enter the Longittude'),
                     border: OutlineInputBorder())),
+          ),
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                alignment: Alignment.center,
+                // background color
+                primary: Colors.orange,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                textStyle: const TextStyle(fontSize: 20),
+              ),
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 5),
+                width: double.infinity,
+                child: const Center(
+                    child: Text(
+                  'Submit',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                )),
+              ),
+              onPressed: () {
+                print(stationlatitudecontroller.text.toString());
+                print(stationlongitudecontroller.text.toString());
+                print(stationnamecontroller.text.toString());
+              },
+            ),
           ),
         ],
       ),
@@ -170,14 +174,6 @@ class HomeState extends State<Home> {
   }
 
   Widget addBus() {
-    setState(() {
-      for (int i = 0; i < stations.length; i++) {
-        ischeckedlist.add(false);
-      }
-      for (int i = 0; i < ischeckedlist.length - 1; i++) {
-        print(ischeckedlist[i]);
-      }
-    });
     return SingleChildScrollView(
         child: Container(
       child: Padding(
@@ -215,79 +211,86 @@ class HomeState extends State<Home> {
                   label: const Text('Bus Number'),
                   border: OutlineInputBorder())),
         ),
-        listViewBuilder(),
+        getDataFromFireToListBuilder(),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            alignment: Alignment.center,
+            // background color
+            primary: Colors.orange,
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+            textStyle: const TextStyle(fontSize: 20),
+          ),
+          child: Container(
+            margin: EdgeInsets.symmetric(vertical: 5),
+            width: double.infinity,
+            child: const Center(
+                child: Text(
+              'Submit',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            )),
+          ),
+          onPressed: () {
+            debugPrint('Button clicked!');
+          },
+        ),
       ]),
     );
   }
 
-  Widget listViewBuilder() {
+  Widget getDataFromFireToListBuilder() {
+    Stream<QuerySnapshot<Map<String, dynamic>>> streamData =
+        FirebaseFirestore.instance.collection('station').snapshots();
     return Container(
-      height: 300,
-      child: ListView.builder(
-          scrollDirection: Axis.vertical,
-          itemCount: stations.length,
-          itemBuilder: (BuildContext context, int index) {
-            return new Card(
-              child: Container(
-                  padding: new EdgeInsets.all(10.0),
-                  child: Column(
-                    children: <Widget>[
-                      new CheckboxListTile(
-                          activeColor: Colors.pink[300],
-                          dense: true,
-                          //font change
-                          title: new Text(
-                            "${stations[index].stationName}",
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.5),
-                          ),
-                          value: ischeckedlist[index],
-                          secondary: Container(
-                            height: 50,
-                            width: 50,
-                            child: Image.asset(
-                              "images/bus-stop 4.png",
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          onChanged: (val) {
-                            setState(() {
-                              ischeckedlist[index] = val as bool;
-                            });
-                          }),
-                    ],
-                  )),
-            );
-          }),
-    );
+        height: 300,
+        child: StreamBuilder<QuerySnapshot>(
+            stream: streamData,
+            builder: (context, AsyncSnapshot snapshot) {
+              if (snapshot.hasError) {
+                return Text('Something went wrong');
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Text("Loading");
+              }
+              return ListView.builder(
+                itemCount: snapshot.data.docs.length,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot st = snapshot.data.docs[index];
+                  return Card(
+                    child: Container(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Column(
+                          children: <Widget>[
+                            CheckboxListTile(
+                                activeColor: Colors.pink[300],
+                                dense: true,
+                                //font change
+                                title: new Text(
+                                  "${st["name"]}",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.5),
+                                ),
+                                value: ischeckedlist[index],
+                                secondary: Container(
+                                  height: 50,
+                                  width: 50,
+                                  child: Image.asset(
+                                    "images/bus-stop 4.png",
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                onChanged: (val) {
+                                  setState(() {
+                                    ischeckedlist[index] = val as bool;
+                                    print(ischeckedlist.length);
+                                  });
+                                }),
+                          ],
+                        )),
+                  );
+                },
+              );
+            }));
   }
-
-//on cours de developpment
-  // Widget getDataFromFireToListBuilder() {
-  //   return Container(
-  //       height: 300,
-  //       child: StreamBuilder(
-  //           stream: ref.snapshots(),
-  //           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-  //             if (snapshot.hasError) {
-  //               return Text("error");
-  //             }
-  //             if (snapshot.connectionState == ConnectionState.waiting) {
-  //               return Text("leading");
-  //             }
-  //             if (snapshot.hasData) {
-  //               return ListView.builder(
-  //                 scrollDirection: Axis.vertical,
-  //                 itemCount: snapshot.data!.docs.length,
-  //                 itemBuilder: (context, int i) {
-  //                   Map<dynamic, dynamic> data =
-  //                       snapshot.data!.docs[i].data() as Map;
-  //                   return Text("${data["name"]}");
-  //                 },
-  //               );
-  //             }
-  //           }));
-  // }
 }

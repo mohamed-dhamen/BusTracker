@@ -8,6 +8,7 @@ class MapsPage extends StatefulWidget {
 }
 
 class _MapsPageState extends State<MapsPage> {
+  late BitmapDescriptor myIcon;
   late GoogleMapController controller;
 
   final CollectionReference collectionRef =
@@ -15,12 +16,12 @@ class _MapsPageState extends State<MapsPage> {
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
-  void initMarker(specify, specify1, specifyId) async {
+  void initMarker(specify, specify1, specifyId) async{
     var markerIdVal = specifyId;
     final MarkerId markerId = MarkerId(markerIdVal);
     final Marker marker = Marker(
       markerId: markerId,
-      position: LatLng(specify, specify1),
+    position: LatLng(specify, specify1),
       //infoWindow: InfoWindow(title: 'Shop', snippet: specify['address']),
     );
     setState(() {
@@ -31,12 +32,15 @@ class _MapsPageState extends State<MapsPage> {
   getMarkerData() async {
     await collectionRef.get().then((querySnapshot) {
       for (var result in querySnapshot.docs) {
-        print(result.data());
         Map<String, dynamic> data = result.data()! as Map<String, dynamic>;
-        initMarker(data["latitude"], data["longitude"],
-            data["name"]);
+        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        print(result.data());
+
+        initMarker(data["latitude"], data["longitude"], data["name"]);
       }
     });
+
+    print(markers);
   }
 
   @override
@@ -61,7 +65,8 @@ class _MapsPageState extends State<MapsPage> {
             markers: markers.values.toSet(),
             mapType: MapType.normal,
             initialCameraPosition: CameraPosition(
-                target: LatLng(33.573050, -7.597099), zoom: 12.0),
+                target: LatLng(34.229059268755805, -3.99616706964861),
+                zoom: 12.0),
             onMapCreated: (GoogleMapController controller) {
               controller = controller;
               getMarkerData();

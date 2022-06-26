@@ -40,12 +40,12 @@ class StationInfoModel {
     });
   }
 
-  static setStationData() async {
-    Map<String, dynamic> data = {
-      'name': 'station4',
-      'latitude': 17.66,
-      "logitude": -1.33
-    };
+static setStationData(Map<String ,dynamic> data) async {
+    // Map<String, dynamic> data = {
+    //   'name': 'station4',
+    //   'latitude': 17.66,
+    //   "logitude": -1.33
+    // };
 
     await collectionRef
         .doc()

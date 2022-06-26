@@ -4,6 +4,7 @@ import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'Model/StationsInfo.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -13,6 +14,8 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home> {
+  static final CollectionReference collectionRef =
+      FirebaseFirestore.instance.collection("station");
   List<bool> ischeckedlist = List.generate(400, (index) => false);
   int index = 0;
   bool isChecked = false;
@@ -161,10 +164,51 @@ class HomeState extends State<Home> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                 )),
               ),
-              onPressed: () {
-                print(stationlatitudecontroller.text.toString());
-                print(stationlongitudecontroller.text.toString());
-                print(stationnamecontroller.text.toString());
+              onPressed: () async {
+                // String latitude = stationlatitudecontroller.text.toString();
+                double latitude =
+                    double.parse(stationlatitudecontroller.text.toString());
+                double longitutde =
+                    double.parse(stationlongitudecontroller.text.toString());
+
+                // String longitutde = stationlongitudecontroller.text.toString();
+                String name = stationnamecontroller.text.toString();
+                print(name);
+                print(latitude);
+                if (!latitude.isNaN && !longitutde.isNaN && name.isNotEmpty) {
+                  Map<String, dynamic> data = {
+                    'name': stationnamecontroller.text.toString(),
+                    'latitude': latitude,
+                    "longitude": longitutde
+                  };
+                  await collectionRef
+                      .doc()
+                      .set(data)
+                      .then((value) => print("data is stored"))
+                      .catchError(
+                          (onError) => print(" somthing wrang : $onError"));
+                  stationnamecontroller.clear();
+                  stationlatitudecontroller.clear();
+                  stationlongitudecontroller.clear();
+                } else {
+                  setState(
+                    () {
+                      final snackBar = SnackBar(
+                        content: const Text('somthing wrang!'),
+                        action: SnackBarAction(
+                          label: 'Go back ',
+                          onPressed: () {
+                            // Some code to undo the change.
+                          },
+                        ),
+                      );
+
+                      // Find the ScaffoldMessenger in the widget tree
+                      // and use it to show a SnackBar.
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    },
+                  );
+                }
               },
             ),
           ),
